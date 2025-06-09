@@ -1,8 +1,10 @@
-from models import Conversation, Message
+from models import Conversation
+from client import BedrockClient
 
 class Manager:
     def __init__(self):
         self.conversations = {}
+        self.bedrock_client = BedrockClient()
     
     def create_conversation(self, title):
         conversation = Conversation(title)
@@ -16,19 +18,18 @@ class Manager:
         return list(self.conversations.values())
     
     def send_message(self, conversation_id, message_content):
-        """Send a message to a conversation and get AI response"""
         conversation = self.get_conversation(conversation_id)
         if not conversation:
             return None, None, "Conversation not found"
+        
+        if not message_content:
+            return None, None, "Message content is required"
         
         # Add user message
         user_message = conversation.add_message("user", message_content)
         
         # Generate AI response
-        ai_response_content = self.generate_ai_response(message_content, conversation.messages)
+        ai_response_content = self.bedrock_client.generate_response(message_content, conversation.messages[:-1])
         ai_message = conversation.add_message("assistant", ai_response_content)
         
         return user_message, ai_message, None
-    
-    def generate_ai_response(self, user_message, conversation_history):
-        return 'Hello, how can I help you today?'

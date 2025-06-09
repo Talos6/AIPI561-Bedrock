@@ -20,11 +20,14 @@ class Conversation:
     def add_message(self, actor, content):
         message = Message(actor, content)
         self.messages.append(message)
+        return message
     
-    def to_dict(self):
-        return {
+    def to_dict(self, include_messages=True):
+        result = {
             "id": self.id,
             "title": self.title,
-            "message_count": len(self.messages),
-            "messages": [msg.to_dict() for msg in self.messages]
+            "message_count": len(self.messages)
         }
+        if include_messages:
+            result["messages"] = [msg.to_dict() for msg in self.messages]
+        return result

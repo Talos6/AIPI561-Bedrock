@@ -1,0 +1,13 @@
+server:
+  debug: false
+  host: "0.0.0.0"
+  port: 5050
+
+aws:
+  region: "us-east-1"
+  access_key_id: "your_access_key_here"
+  secret_access_key: "your_secret_key_here"
+
+bedrock:
+  model_id: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  max_tokens: 4000

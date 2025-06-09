@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
 from manager import Manager
+from loguru import logger
+from config import get_config
 
+config = get_config()
 app = Flask(__name__)
-
 manager = Manager()
 
 @app.route('/conversations', methods=['POST'])
 def create_conversation():
-    """Create a new conversation"""
     try:
         data = request.get_json() or {}
         title = data.get('title', 'New Conversation')
@@ -28,7 +29,6 @@ def create_conversation():
     
 @app.route('/conversations/<conversation_id>', methods=['GET'])
 def get_conversation(conversation_id):
-    """Get a specific conversation with all messages"""
     try:
         conversation = manager.get_conversation(conversation_id)
         if not conversation:
@@ -50,10 +50,9 @@ def get_conversation(conversation_id):
 
 @app.route('/conversations', methods=['GET'])
 def list_conversations():
-    """List all existing conversations"""
     try:
         conversations = manager.list_conversations()
-        conversation_list = [conv.to_dict() for conv in conversations]
+        conversation_list = [conv.to_dict(include_messages=False) for conv in conversations]
         
         return jsonify({
             "success": True,
@@ -69,9 +68,8 @@ def list_conversations():
 
 @app.route('/conversations/<conversation_id>/messages', methods=['POST'])
 def send_message(conversation_id):
-    """Send a message to a conversation and get response"""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         
         user_message, ai_message, error = manager.send_message(
             conversation_id, data.get('message', '')
@@ -103,4 +101,9 @@ def health_check():
     }), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    debug = config['server']['debug']
+    host = config['server']['host']
+    port = config['server']['port']
+    
+    logger.info(f"Starting Flask server on {host}:{port} (debug={debug})")
+    app.run(debug=debug, host=host, port=port) 
